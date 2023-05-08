@@ -108,7 +108,6 @@ export default function App() {
       }
       return chore
     });
-    console.log({ updatedChores })
     await AsyncStorage.setItem('chores', JSON.stringify(updatedChores));
     setChores(updatedChores);
   };
@@ -127,7 +126,6 @@ export default function App() {
   };
 
   const handleComplete = () => {
-    console.log('here handleComplete')
     onComplete(choreIdToComplete);
     toggleConfirmCompletionModal()
   };
