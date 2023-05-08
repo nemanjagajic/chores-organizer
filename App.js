@@ -50,19 +50,36 @@ export default function App() {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.choreItem}>
-      <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemFrequency}>{item.frequency} days</Text>
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => {
-          setChoreIdToRemove(item.id)
-          toggleConfirmRemovalModal()
-        }}
-      >
-        <MaterialIcons name="delete" size={24} color="#fff" />
-      </TouchableOpacity>
+  const renderItem = ({ item, index }) => (
+    <View style={[
+      styles.choreItem,
+      index === 0 && styles.choreItemFirst,
+      index === chores.length - 1 && styles.choreItemLast
+    ]}>
+      <View style={styles.choreItemLeft}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemFrequency}>{item.frequency} days</Text>
+      </View>
+      <View style={styles.choreItemRight}>
+        <TouchableOpacity
+          style={[styles.menuButton, styles.checkButton]}
+          onPress={() => {
+            setChoreIdToRemove(item.id)
+            toggleConfirmRemovalModal()
+          }}
+        >
+          <MaterialIcons name="check" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => {
+            setChoreIdToRemove(item.id)
+            toggleConfirmRemovalModal()
+          }}
+        >
+          <MaterialIcons name="delete" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -93,7 +110,7 @@ export default function App() {
         data={chores}
         renderItem={renderItem}
         keyExtractor={item => item.id}
-        style={styles.choresList}
+        contentContainerStyle={styles.choresList}
       />
       <Modal
         isVisible={isModalVisible}
@@ -115,7 +132,11 @@ export default function App() {
             style={styles.input}
             placeholder="Frequency in days"
             keyboardType="numeric"
-            onChangeText={text => setFrequency(text)}
+            onChangeText={text => {
+              if (!isNaN(text)) {
+                setFrequency(text)
+              }
+            }}
             value={frequency}
           />
           <TouchableOpacity style={styles.addButton} onPress={addChore}>
@@ -196,9 +217,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: '#26A69A',
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 10,
+    minWidth: 100,
+    minHeight: 45
   },
   addButtonText: {
     color: '#fff',
@@ -213,17 +239,21 @@ const styles = StyleSheet.create({
     width: '90%',
     fontSize: 18,
     color: '#444',
-    marginTop: 40
+    marginTop: 20,
+    marginBottom: 30
   },
   choresList: {
-    flex: 1,
-    width: '90%',
-    marginTop: 20,
+    display: "flex",
+    alignItems: "center",
+    width: '100%',
   },
   choreItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    paddingVertical: 10,
+    flexDirection: "row",
+    marginVertical: 10,
+    marginHorizontal: 20,
+    padding: 14,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 20,
   },
   itemName: {
     fontSize: 20,
@@ -233,15 +263,24 @@ const styles = StyleSheet.create({
   },
   itemFrequency: {
     fontSize: 16,
-    color: '#aaa',
-    flex: 1,
-    textAlign: 'right',
+    color: '#8c8c8c',
+    textAlign: 'left',
   },
-  removeButton: {
-    backgroundColor: "red",
+  menuButton: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ccc",
     borderRadius: 20,
-    padding: 10,
     marginLeft: 10,
+    width: 40,
+    height: 40,
+    marginTop: 2,
+    marginBottom: 2
+  },
+  checkButton: {
+    backgroundColor: '#26A69A',
+    marginBottom: 10
   },
   confirmModalView: {
     backgroundColor: "#fff",
@@ -274,4 +313,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  choreItemLeft: {
+    flexDirection: "column",
+    width: "80%"
+  },
+  choreItemRight: {
+    display: "flex",
+    width: "20%",
+    alignItems: "flex-end",
+    flexDirection: "column",
+  },
+  choreItemFirst: {
+    marginTop: 20
+  },
+  choreItemLast: {
+    marginBottom: 30
+  }
 });
