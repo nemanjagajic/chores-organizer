@@ -62,8 +62,14 @@ export default function App() {
     ]}>
       <View style={styles.choreItemLeft}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemDescription}>Complete in: {getDaysLeft(item.lastCompleted, item.frequency)} days</Text>
-        <Text style={styles.itemDescription}>Last completed: {getTimeAgo(item.lastCompleted)}</Text>
+        <View style={styles.itemLineWrapper}>
+          <Text style={styles.itemDescription}>Complete in: </Text>
+          <Text style={[styles.itemDescription, styles.timeIndicator]}>{getDaysLeft(item.lastCompleted, item.frequency)} days</Text>
+        </View>
+        <View style={styles.itemLineWrapper}>
+          <Text style={styles.itemDescription}>Last completed: </Text>
+          <Text style={[styles.itemDescription, styles.timeIndicator]}>{getTimeAgo(item.lastCompleted)}</Text>
+        </View>
         <Text style={styles.itemFrequency}>every {item.frequency} days</Text>
       </View>
       <View style={styles.choreItemRight}>
@@ -148,6 +154,7 @@ export default function App() {
   }
 
   const getDaysLeft = (timestamp, frequency) => {
+    if (!timestamp) return '/'
     const currentTime = moment();
     const targetDate = moment(timestamp).add(frequency, 'days');
 
@@ -412,5 +419,12 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     backgroundColor: "#26A69A"
+  },
+  itemLineWrapper: {
+    display: "flex",
+    flexDirection: "row"
+  },
+  timeIndicator: {
+    fontWeight: "bold"
   }
 });
