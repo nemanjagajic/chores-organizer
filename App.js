@@ -3,6 +3,7 @@ import Modal from 'react-native-modal';
 import { useState, useEffect } from "react"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
+import moment from 'moment';
 
 export default function App() {
   const [isModalVisible, setModalVisible] = useState(false);
@@ -10,7 +11,9 @@ export default function App() {
   const [frequency, setFrequency] = useState('');
   const [chores, setChores] = useState([]);
   const [isConfirmRemovalModalVisible, setConfirmRemovalModalVisible] = useState(false);
+  const [isConfirmCompletionModalVisible, setConfirmCompletionModalVisible] = useState(false);
   const [choreIdToRemove, setChoreIdToRemove] = useState(null)
+  const [choreIdToComplete, setChoreIdToComplete] = useState(null)
 
   useEffect(() => {
     getChores();
@@ -27,6 +30,7 @@ export default function App() {
         id: new Date().getTime().toString(),
         name: choreName,
         frequency: frequency,
+        lastCompleted: ''
       };
       const updatedChores = [...chores, newChore];
       await AsyncStorage.setItem('chores', JSON.stringify(updatedChores));
@@ -58,14 +62,16 @@ export default function App() {
     ]}>
       <View style={styles.choreItemLeft}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemFrequency}>{item.frequency} days</Text>
+        <Text style={styles.itemDescription}>Complete in: {getDaysLeft(item.lastCompleted, item.frequency)} days</Text>
+        <Text style={styles.itemDescription}>Last completed: {getTimeAgo(item.lastCompleted)}</Text>
+        <Text style={styles.itemFrequency}>every {item.frequency} days</Text>
       </View>
       <View style={styles.choreItemRight}>
         <TouchableOpacity
           style={[styles.menuButton, styles.checkButton]}
           onPress={() => {
-            setChoreIdToRemove(item.id)
-            toggleConfirmRemovalModal()
+            setChoreIdToComplete(item.id)
+            toggleConfirmCompletionModal()
           }}
         >
           <MaterialIcons name="check" size={24} color="white" />
@@ -84,7 +90,19 @@ export default function App() {
   );
 
   const onRemove = async (choreId) => {
-    const updatedChores = chores.filter((i) => i.id !== choreId);
+    const updatedChores = chores.filter((chore) => chore.id !== choreId);
+    await AsyncStorage.setItem('chores', JSON.stringify(updatedChores));
+    setChores(updatedChores);
+  };
+
+  const onComplete = async (choreId) => {
+    const updatedChores = chores.map((chore) => {
+      if (chore.id === choreId) {
+        return {...chore, lastCompleted: moment.now()}
+      }
+      return chore
+    });
+    console.log({ updatedChores })
     await AsyncStorage.setItem('chores', JSON.stringify(updatedChores));
     setChores(updatedChores);
   };
@@ -93,10 +111,49 @@ export default function App() {
     setConfirmRemovalModalVisible(!isConfirmRemovalModalVisible);
   };
 
+  const toggleConfirmCompletionModal = () => {
+    setConfirmCompletionModalVisible(!isConfirmCompletionModalVisible);
+  };
+
   const handleRemove = () => {
     onRemove(choreIdToRemove);
     toggleConfirmRemovalModal();
   };
+
+  const handleComplete = () => {
+    console.log('here handleComplete')
+    onComplete(choreIdToComplete);
+    toggleConfirmCompletionModal()
+  };
+
+  const getTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Never'
+
+    const currentTime = moment();
+    const passedTime = moment(timestamp);
+
+    // Check if current time and passed time are on the same day
+    if (currentTime.isSame(passedTime, 'day')) {
+      return 'Today';
+    }
+
+    // Check if current time minus passed time equals yesterday
+    if (currentTime.diff(passedTime, 'days') === 1) {
+      return 'Yesterday';
+    }
+
+    // Calculate the number of days ago
+    const daysAgo = currentTime.diff(passedTime, 'days');
+    return `${daysAgo} days ago`;
+  }
+
+  const getDaysLeft = (timestamp, frequency) => {
+    const currentTime = moment();
+    const targetDate = moment(timestamp).add(frequency, 'days');
+
+    const daysLeft = targetDate.diff(currentTime, 'days');
+    return daysLeft;
+  }
 
   return (
     <View style={styles.container}>
@@ -142,6 +199,22 @@ export default function App() {
           <TouchableOpacity style={styles.addButton} onPress={addChore}>
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
+        </View>
+      </Modal>
+      <Modal isVisible={isConfirmCompletionModalVisible} onBackdropPress={toggleConfirmCompletionModal}>
+        <View style={styles.confirmModalView}>
+          <Text style={styles.confirmModalTitle}>Complete this item?</Text>
+          <View style={styles.confirmModalButtonContainer}>
+            <TouchableOpacity style={[styles.confirmModalButton, styles.confirmModalCancelButton]} onPress={toggleConfirmCompletionModal}>
+              <Text style={styles.confirmModalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.confirmModalButton, styles.confirmModalDeleteButton, styles.completeButton]}
+              onPress={handleComplete}
+            >
+              <Text style={styles.confirmModalButtonText}>Complete</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
       <Modal isVisible={isConfirmRemovalModalVisible} onBackdropPress={toggleConfirmRemovalModal}>
@@ -260,11 +333,19 @@ const styles = StyleSheet.create({
     color: '#555',
     fontWeight: 'bold',
     flex: 1,
+    marginBottom: 12
   },
-  itemFrequency: {
+  itemDescription: {
     fontSize: 16,
     color: '#8c8c8c',
     textAlign: 'left',
+    marginVertical: 2
+  },
+  itemFrequency: {
+    fontSize: 14,
+    color: '#8c8c8c',
+    textAlign: 'left',
+    marginTop: 10
   },
   menuButton: {
     display: "flex",
@@ -328,5 +409,8 @@ const styles = StyleSheet.create({
   },
   choreItemLast: {
     marginBottom: 30
+  },
+  completeButton: {
+    backgroundColor: "#26A69A"
   }
 });
