@@ -180,6 +180,7 @@ export default function App() {
         onSwipeComplete={toggleModal}
         swipeDirection={['down']}
         style={styles.modalContainer}
+        avoidKeyboard={true}
       >
         <View style={styles.modalView}>
           <View style={styles.dragIndicator} />
