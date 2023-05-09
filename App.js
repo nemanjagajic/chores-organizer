@@ -157,7 +157,7 @@ export default function App() {
     const targetDate = moment(timestamp).add(frequency, 'days');
 
     const daysLeft = targetDate.diff(currentTime, 'days');
-    return daysLeft;
+    return daysLeft + 1;
   }
 
   return (
