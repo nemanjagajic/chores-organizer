@@ -148,7 +148,7 @@ export default function App() {
 
     // Calculate the number of days ago
     const daysAgo = currentTime.diff(passedTime, 'days');
-    return `${daysAgo - 1} days ago`;
+    return `${daysAgo + 1} days ago`;
   }
 
   const getDaysLeft = (timestamp, frequency) => {
