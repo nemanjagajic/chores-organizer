@@ -156,7 +156,7 @@ export default function App() {
     const currentTime = moment();
     const targetDate = moment(timestamp).add(frequency, 'days');
 
-    return targetDate.diff(currentTime, 'days');
+    return targetDate.diff(currentTime, 'days') + 1;
   }
 
   return (
