@@ -133,8 +133,8 @@ export default function App() {
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Never'
 
-    const currentTime = moment();
-    const passedTime = moment(timestamp);
+    const currentTime = moment().startOf('day');
+    const passedTime = moment(timestamp).startOf('day');
 
     // Check if current time and passed time are on the same day
     if (currentTime.isSame(passedTime, 'day')) {
@@ -153,10 +153,10 @@ export default function App() {
 
   const getDaysLeft = (timestamp, frequency) => {
     if (!timestamp) return '/'
-    const currentTime = moment();
-    const targetDate = moment(timestamp).add(frequency, 'days');
+    const currentTime = moment().startOf('day');
+    const targetDate = moment(timestamp).startOf('day').add(frequency, 'days');
 
-    return targetDate.diff(currentTime, 'days') + 1;
+    return targetDate.diff(currentTime, 'days');
   }
 
   return (
