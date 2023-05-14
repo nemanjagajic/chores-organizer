@@ -54,46 +54,66 @@ export default function App() {
     }
   };
 
-  const renderItem = ({ item, index }) => (
-    <View style={[
-      styles.choreItem,
-      index === 0 && styles.choreItemFirst,
-      index === chores.length - 1 && styles.choreItemLast
-    ]}>
-      <View style={styles.choreItemLeft}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        <View style={styles.itemLineWrapper}>
-          <Text style={styles.itemDescription}>Complete in: </Text>
-          <Text style={[styles.itemDescription, styles.timeIndicator]}>{getDaysLeft(item.lastCompleted, item.frequency)} days</Text>
+  const getDaysLeftColor = (daysLeft) => {
+    if (isNaN(daysLeft)) return '#8c8c8c'
+    if (Number.parseInt(daysLeft) > 0) return '#26A69A'
+    if (Number.parseInt(daysLeft) === 0) return '#FFB74D'
+    if (Number.parseInt(daysLeft) < 0) return '#FF7043'
+  }
+
+  const renderItem = ({ item, index }) => {
+    const daysLeft = getDaysLeft(item.lastCompleted, item.frequency)
+    const color = getDaysLeftColor(daysLeft)
+
+    return (
+      <View style={[
+        styles.choreItem,
+        index === 0 && styles.choreItemFirst,
+        index === chores.length - 1 && styles.choreItemLast
+      ]}>
+        <View style={styles.choreItemLeft}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <View style={styles.itemLineWrapper}>
+            <Text style={styles.itemDescription}>Complete in: </Text>
+            <Text
+              style={[
+                styles.itemDescription,
+                styles.timeIndicator,
+                { color: getDaysLeftColor(daysLeft) }
+              ]}
+            >
+              {daysLeft} days
+            </Text>
+          </View>
+          <View style={styles.itemLineWrapper}>
+            <Text style={styles.itemDescription}>Last completed: </Text>
+            <Text style={[styles.itemDescription, styles.timeIndicator]}>{getTimeAgo(item.lastCompleted)}</Text>
+          </View>
+          <Text style={styles.itemFrequency}>every {item.frequency} days</Text>
         </View>
-        <View style={styles.itemLineWrapper}>
-          <Text style={styles.itemDescription}>Last completed: </Text>
-          <Text style={[styles.itemDescription, styles.timeIndicator]}>{getTimeAgo(item.lastCompleted)}</Text>
+        <View style={styles.choreItemRight}>
+          <TouchableOpacity
+            style={[styles.menuButton, styles.checkButton]}
+            onPress={() => {
+              setChoreIdToComplete(item.id)
+              toggleConfirmCompletionModal()
+            }}
+          >
+            <MaterialIcons name="check" size={24} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => {
+              setChoreIdToRemove(item.id)
+              toggleConfirmRemovalModal()
+            }}
+          >
+            <MaterialIcons name="delete" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.itemFrequency}>every {item.frequency} days</Text>
       </View>
-      <View style={styles.choreItemRight}>
-        <TouchableOpacity
-          style={[styles.menuButton, styles.checkButton]}
-          onPress={() => {
-            setChoreIdToComplete(item.id)
-            toggleConfirmCompletionModal()
-          }}
-        >
-          <MaterialIcons name="check" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => {
-            setChoreIdToRemove(item.id)
-            toggleConfirmRemovalModal()
-          }}
-        >
-          <MaterialIcons name="delete" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  }
 
   const onRemove = async (choreId) => {
     const updatedChores = chores.filter((chore) => chore.id !== choreId);
