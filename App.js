@@ -1,6 +1,6 @@
 import { Button, StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, FlatList } from 'react-native';
 import Modal from 'react-native-modal';
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
@@ -179,6 +179,16 @@ export default function App() {
     return targetDate.diff(currentTime, 'days');
   }
 
+  const choresSorted = useMemo(() => {
+    return chores.sort((c1, c2) => {
+      const c1DaysLeft = !!c1.lastCompleted ? getDaysLeft(c1.lastCompleted, c1.frequency) : Number.MAX_SAFE_INTEGER
+      const c2DaysLeft = !!c2.lastCompleted ? getDaysLeft(c2.lastCompleted, c2.frequency) : Number.MAX_SAFE_INTEGER
+      if (c1DaysLeft < c2DaysLeft) return -1
+      if (c1DaysLeft > c2DaysLeft) return 1
+      return 0
+    })
+  }, [chores])
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -188,7 +198,7 @@ export default function App() {
         </TouchableOpacity>
       </View>
       <FlatList
-        data={chores}
+        data={choresSorted}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.choresList}
